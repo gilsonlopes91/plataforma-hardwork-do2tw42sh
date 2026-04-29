@@ -18,28 +18,27 @@ import { HardHat } from 'lucide-react'
 export default function Login() {
   const { login } = useAppContext()
   const navigate = useNavigate()
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
-    setTimeout(() => {
-      const user = login(username, password)
-      setLoading(false)
-      if (user) {
-        toast.success(`Bem-vindo, ${user.name}!`)
-        if (user.role === 'ADMIN') {
-          navigate('/admin')
-        } else {
-          navigate('/minha-lista')
-        }
+    const user = await login(email, password)
+    setLoading(false)
+
+    if (user) {
+      toast.success(`Bem-vindo, ${user.name}!`)
+      if (user.role === 'ADMIN') {
+        navigate('/admin')
       } else {
-        toast.error('Usuário ou senha inválidos. Tente novamente.')
+        navigate('/minha-lista')
       }
-    }, 600)
+    } else {
+      toast.error('E-mail ou senha inválidos. Tente novamente.')
+    }
   }
 
   return (
@@ -58,12 +57,13 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Usuário</Label>
+              <Label htmlFor="email">E-mail</Label>
               <Input
-                id="username"
-                placeholder="Ex: admin"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                placeholder="exemplo@hardwork.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="h-11 bg-slate-50 dark:bg-slate-900"
               />
@@ -94,15 +94,11 @@ export default function Login() {
         <div className="px-6 pb-6 text-center text-xs text-slate-500 bg-slate-50 dark:bg-slate-900 pt-4 rounded-b-lg border-t">
           <p className="font-medium mb-1 text-slate-600">Credenciais para teste:</p>
           <p>
-            Mestre: <span className="font-mono bg-slate-200 px-1 rounded">eu</span> /{' '}
+            Admin: <span className="font-mono bg-slate-200 px-1 rounded">admin@hardwork.com</span> /{' '}
             <span className="font-mono bg-slate-200 px-1 rounded">123456</span>
           </p>
           <p className="mt-1">
-            Admin: <span className="font-mono bg-slate-200 px-1 rounded">admin</span> /{' '}
-            <span className="font-mono bg-slate-200 px-1 rounded">123456</span>
-          </p>
-          <p className="mt-1">
-            User: <span className="font-mono bg-slate-200 px-1 rounded">teste</span> /{' '}
+            User: <span className="font-mono bg-slate-200 px-1 rounded">teste@hardwork.com</span> /{' '}
             <span className="font-mono bg-slate-200 px-1 rounded">123456</span>
           </p>
         </div>
