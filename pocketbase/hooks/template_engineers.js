@@ -1,4 +1,3 @@
-// @deps xlsx@0.18.5
 routerAdd(
   'GET',
   '/backend/v1/import-engineers/template',
@@ -7,7 +6,6 @@ routerAdd(
       return e.forbiddenError('Only admins can download the template.')
     }
 
-    const xlsx = require('xlsx')
     const headers = [
       'numero',
       'numero_corrigido',
@@ -22,13 +20,9 @@ routerAdd(
       'status_2026',
     ]
 
-    const wb = xlsx.utils.book_new()
-    const ws = xlsx.utils.aoa_to_sheet([headers])
-    xlsx.utils.book_append_sheet(wb, ws, 'Template')
+    const csv = headers.join(',') + '\n'
 
-    const base64 = xlsx.write(wb, { type: 'base64', bookType: 'xlsx' })
-
-    return e.json(200, { template: base64 })
+    return e.json(200, { template: csv })
   },
   $apis.requireAuth(),
 )

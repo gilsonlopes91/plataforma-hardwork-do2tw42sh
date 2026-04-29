@@ -1,4 +1,3 @@
-// @deps xlsx@0.18.5
 routerAdd(
   'POST',
   '/backend/v1/import-engineers',
@@ -12,22 +11,32 @@ routerAdd(
       return e.badRequestError('No file payload provided.')
     }
 
-    const xlsx = require('xlsx')
-    let workbook
-    try {
-      workbook = xlsx.read(body.payload, { type: 'base64' })
-    } catch (err) {
-      return e.badRequestError('Invalid Excel file format.')
+    const text = body.payload
+
+    function parseCSVRow(line) {
+      let inQuotes = false
+      let current = ''
+      const result = []
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i]
+        if (char === '"') {
+          inQuotes = !inQuotes
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim())
+          current = ''
+        } else {
+          current += char
+        }
+      }
+      result.push(current.trim())
+      return result.map((v) => v.replace(/^"|"$/g, ''))
     }
 
-    const sheetName = workbook.SheetNames[0]
-    const rows = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' })
-
-    if (rows.length === 0) {
-      return e.badRequestError('The uploaded spreadsheet is empty.')
+    const lines = text.split(/\r?\n/).filter((line) => line.trim())
+    if (lines.length < 2) {
+      return e.badRequestError('The uploaded CSV is empty or has no data rows.')
     }
 
-    const firstRow = rows[0]
     const expectedCols = [
       'numero',
       'numero_corrigido',
@@ -42,7 +51,7 @@ routerAdd(
       'status_2026',
     ]
 
-    const headers = Object.keys(firstRow)
+    const headers = parseCSVRow(lines[0])
     if (!headers.includes('nome_completo')) {
       return e.badRequestError(
         'Missing mandatory column: nome_completo. Please check the template.',
@@ -55,9 +64,14 @@ routerAdd(
 
     const col = $app.findCollectionByNameOrId('engineers')
 
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i]
-      const rowNum = i + 2 // Excel row number (header is 1)
+    for (let i = 1; i < lines.length; i++) {
+      const rowValues = parseCSVRow(lines[i])
+      const rowNum = i + 1
+      const row = {}
+      headers.forEach((h, index) => {
+        row[h] = rowValues[index] || ''
+      })
+
       const numero = (row.numero || '').toString().trim()
       const nome_completo = (row.nome_completo || '').toString().trim()
 
@@ -69,14 +83,12 @@ routerAdd(
 
       let record = null
 
-      // Attempt to match by "numero"
       if (numero) {
         try {
           record = $app.findFirstRecordByData('engineers', 'numero', numero)
         } catch (_) {}
       }
 
-      // Attempt to match by "nome_completo" if not found
       if (!record) {
         try {
           record = $app.findFirstRecordByData('engineers', 'nome_completo', nome_completo)
@@ -87,7 +99,6 @@ routerAdd(
         record = new Record(col)
       }
 
-      // Upsert fields
       expectedCols.forEach((colName) => {
         if (row[colName] !== undefined && row[colName] !== null) {
           record.set(colName, row[colName].toString().trim())

@@ -55,19 +55,13 @@ export default function EngineersDb() {
   const handleDownloadTemplate = async () => {
     try {
       const res = await pb.send('/backend/v1/import-engineers/template', { method: 'GET' })
-      const bstr = atob(res.template)
-      let n = bstr.length
-      const u8arr = new Uint8Array(n)
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n)
-      }
-      const blob = new Blob([u8arr], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      const blob = new Blob([res.template], {
+        type: 'text/csv;charset=utf-8;',
       })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'Template_Engenheiros.xlsx'
+      a.download = 'Template_Engenheiros.csv'
       a.click()
       URL.revokeObjectURL(url)
     } catch (err) {
@@ -84,11 +78,16 @@ export default function EngineersDb() {
 
     const reader = new FileReader()
     reader.onload = async (event) => {
-      const base64 = (event.target?.result as string).split(',')[1]
+      const result = event.target?.result as string | undefined
+      if (!result) {
+        toast.error('Erro ao ler conteúdo do arquivo.')
+        setIsUploading(false)
+        return
+      }
       try {
         const res = await pb.send('/backend/v1/import-engineers', {
           method: 'POST',
-          body: JSON.stringify({ payload: base64 }),
+          body: JSON.stringify({ payload: result }),
         })
         setImportResult(res)
         if (res.failed > 0) {
@@ -108,7 +107,7 @@ export default function EngineersDb() {
       toast.error('Erro ao ler o arquivo selecionado.')
       setIsUploading(false)
     }
-    reader.readAsDataURL(file)
+    reader.readAsText(file)
   }
 
   return (
@@ -136,7 +135,7 @@ export default function EngineersDb() {
 
               <ul className="list-disc list-inside space-y-2 marker:text-blue-500">
                 <li>
-                  O arquivo deve ser obrigatoriamente no formato <strong>.xlsx</strong>.
+                  O arquivo deve ser obrigatoriamente no formato <strong>.csv</strong>.
                 </li>
                 <li>
                   A coluna{' '}
@@ -152,7 +151,7 @@ export default function EngineersDb() {
               </ul>
 
               <Button onClick={handleDownloadTemplate} variant="outline" className="mt-2 bg-white">
-                <Download className="w-4 h-4 mr-2" /> Baixar Template (.xlsx)
+                <Download className="w-4 h-4 mr-2" /> Baixar Template (.csv)
               </Button>
             </AlertDescription>
           </Alert>
@@ -164,7 +163,7 @@ export default function EngineersDb() {
                 Importar Dados
               </CardTitle>
               <CardDescription>
-                Faça upload do arquivo Excel para atualizar a base (Upsert ativo).
+                Faça upload do arquivo CSV para atualizar a base (Upsert ativo).
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -188,7 +187,7 @@ export default function EngineersDb() {
                     id="dropzone-file"
                     type="file"
                     className="hidden"
-                    accept=".xlsx"
+                    accept=".csv"
                     onChange={handleFileUpload}
                     disabled={isUploading}
                   />
