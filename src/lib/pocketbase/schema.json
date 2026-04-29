@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T19:58:26.726Z",
+  "generatedAt": "2026-04-29T20:02:04.476Z",
   "collections": [
     {
       "name": "users",
@@ -37,6 +37,13 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "role",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["ADMIN", "USER"]
         }
       ],
       "indexes": [
@@ -71,6 +78,162 @@
         }
       ],
       "indexes": []
+    },
+    {
+      "name": "engineers",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.role = 'ADMIN'",
+        "update": "@request.auth.role = 'ADMIN'",
+        "delete": "@request.auth.role = 'ADMIN'"
+      },
+      "fields": [
+        {
+          "name": "numero",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "numero_corrigido",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "numero_formatado",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nome_salvo",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nome_publico",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "nome_completo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "e_mail",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "titulo_",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "cidade",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "inspetoria",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "status_2026",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "user_selections",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.role = 'ADMIN' || user_id = @request.auth.id",
+        "view": "@request.auth.role = 'ADMIN' || user_id = @request.auth.id",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.role = 'ADMIN' || user_id = @request.auth.id",
+        "delete": "@request.auth.role = 'ADMIN' || user_id = @request.auth.id"
+      },
+      "fields": [
+        {
+          "name": "user_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "engineer_id",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "engineers"
+        },
+        {
+          "name": "entrou_em_contato",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["Sim", "Não", "Pendente"]
+        },
+        {
+          "name": "esta_conosco",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["Sim", "Não", "Talvez", "Pendente"]
+        },
+        {
+          "name": "observacoes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE UNIQUE INDEX idx_user_engineer ON user_selections (user_id, engineer_id)"]
     }
   ]
 }

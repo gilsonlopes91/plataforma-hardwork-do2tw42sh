@@ -95,11 +95,11 @@ export default function Login() {
           <p className="font-medium mb-1 text-slate-600">Credenciais para teste:</p>
           <p>
             Admin: <span className="font-mono bg-slate-200 px-1 rounded">admin@hardwork.com</span> /{' '}
-            <span className="font-mono bg-slate-200 px-1 rounded">123456</span>
+            <span className="font-mono bg-slate-200 px-1 rounded">Skip@2026</span>
           </p>
           <p className="mt-1">
             User: <span className="font-mono bg-slate-200 px-1 rounded">teste@hardwork.com</span> /{' '}
-            <span className="font-mono bg-slate-200 px-1 rounded">123456</span>
+            <span className="font-mono bg-slate-200 px-1 rounded">Skip@2026</span>
           </p>
         </div>
       </Card>

@@ -8,7 +8,7 @@ migrate(
       } catch (_) {
         const record = new Record(users)
         record.setEmail(email)
-        record.setPassword('123456')
+        record.setPassword('Skip@2026')
         record.setVerified(true)
         record.set('name', name)
         record.set('role', role)
