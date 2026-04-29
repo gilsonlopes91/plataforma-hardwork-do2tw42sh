@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getEngineers, getUserSelections, getUsers } from '@/services/api'
-import { Engineer, UserSelection, User } from '@/types'
+import { getEngineersCount, getUserSelections, getUsers } from '@/services/api'
+import { UserSelection, User } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -25,7 +25,7 @@ import { useRealtime } from '@/hooks/use-realtime'
 
 export default function AdminPanel() {
   const [selections, setSelections] = useState<UserSelection[]>([])
-  const [engineers, setEngineers] = useState<Engineer[]>([])
+  const [totalEngineers, setTotalEngineers] = useState(0)
   const [users, setUsers] = useState<User[]>([])
 
   const [filterUser, setFilterUser] = useState('ALL')
@@ -34,9 +34,13 @@ export default function AdminPanel() {
 
   const loadData = async () => {
     try {
-      const [s, e, u] = await Promise.all([getUserSelections(), getEngineers(), getUsers()])
+      const [s, count, u] = await Promise.all([
+        getUserSelections(),
+        getEngineersCount(),
+        getUsers(),
+      ])
       setSelections(s)
-      setEngineers(e)
+      setTotalEngineers(count)
       setUsers(u)
     } catch {
       /* intentionally ignored */
@@ -83,7 +87,7 @@ export default function AdminPanel() {
             <HardHat className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{engineers.length}</div>
+            <div className="text-3xl font-bold">{totalEngineers}</div>
           </CardContent>
         </Card>
         <Card className="shadow-none border-none shadow-elevation">
@@ -175,31 +179,43 @@ export default function AdminPanel() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEntries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell className="font-medium">{entry.expand?.user_id?.name}</TableCell>
-                    <TableCell>{entry.expand?.engineer_id?.nome_completo}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{entry.entrou_em_contato}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={cn(
-                          'font-medium border-none',
-                          getStatusColor(entry.esta_conosco),
-                        )}
-                      >
-                        {entry.esta_conosco}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="truncate max-w-[200px]">
-                      {entry.observacoes || '-'}
-                    </TableCell>
-                    <TableCell className="text-right text-xs tabular-nums">
-                      {new Date(entry.updated).toLocaleString('pt-BR')}
+                {filteredEntries.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-slate-500">
+                      Nenhuma seleção encontrada.
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredEntries.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="font-medium">
+                        {entry.expand?.user_id?.name || 'Desconhecido'}
+                      </TableCell>
+                      <TableCell>
+                        {entry.expand?.engineer_id?.nome_completo || 'Desconhecido'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{entry.entrou_em_contato}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={cn(
+                            'font-medium border-none',
+                            getStatusColor(entry.esta_conosco),
+                          )}
+                        >
+                          {entry.esta_conosco}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="truncate max-w-[200px]">
+                        {entry.observacoes || '-'}
+                      </TableCell>
+                      <TableCell className="text-right text-xs tabular-nums">
+                        {new Date(entry.updated).toLocaleString('pt-BR')}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

@@ -1,8 +1,29 @@
 import pb from '@/lib/pocketbase/client'
 import { Engineer, UserSelection, User } from '@/types'
 
-export const getEngineers = () =>
-  pb.collection('engineers').getFullList<Engineer>({ sort: 'nome_completo' })
+export const getEngineers = (query: string = '') => {
+  const filter = query ? `nome_completo ~ "${query}" || cidade ~ "${query}"` : ''
+  return pb.collection('engineers').getList<Engineer>(1, 100, {
+    filter,
+    sort: 'nome_completo',
+  })
+}
+
+export const getEngineersCount = () =>
+  pb
+    .collection('engineers')
+    .getList(1, 1)
+    .then((res) => res.totalItems)
+
+export const searchEngineersByName = (name: string) => {
+  return pb
+    .collection('engineers')
+    .getList<Engineer>(1, 20, {
+      filter: name ? `nome_completo ~ "${name}"` : '',
+      sort: 'nome_completo',
+    })
+    .then((res) => res.items)
+}
 
 export const createEngineer = (data: Partial<Engineer>) =>
   pb.collection('engineers').create<Engineer>(data)

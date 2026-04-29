@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import { useAppContext } from '@/context/app-context'
 import { Engineer, UserSelection } from '@/types'
 import {
-  getEngineers,
   getUserSelections,
   createUserSelection,
   updateUserSelection,
   deleteUserSelection,
+  searchEngineersByName,
 } from '@/services/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,14 +46,14 @@ export default function MyList() {
   const [openCombo, setOpenCombo] = useState(false)
   const [selectedEngDetails, setSelectedEngDetails] = useState<Engineer | null>(null)
 
-  const [engineers, setEngineers] = useState<Engineer[]>([])
   const [myList, setMyList] = useState<UserSelection[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchedEngineers, setSearchedEngineers] = useState<Engineer[]>([])
 
   const loadData = async () => {
     if (!currentUser) return
     try {
-      const [engs, sels] = await Promise.all([getEngineers(), getUserSelections(currentUser.id)])
-      setEngineers(engs)
+      const sels = await getUserSelections(currentUser.id)
       setMyList(sels)
     } catch {
       /* intentionally ignored */
@@ -64,6 +64,22 @@ export default function MyList() {
     loadData()
   }, [currentUser])
   useRealtime('user_selections', loadData)
+
+  useEffect(() => {
+    if (searchQuery.length < 2) {
+      setSearchedEngineers([])
+      return
+    }
+    const delay = setTimeout(async () => {
+      try {
+        const results = await searchEngineersByName(searchQuery)
+        setSearchedEngineers(results)
+      } catch (err) {
+        // Handle gracefully
+      }
+    }, 300)
+    return () => clearTimeout(delay)
+  }, [searchQuery])
 
   const handleAdd = async (engineerId: string) => {
     if (!currentUser) return
@@ -96,15 +112,16 @@ export default function MyList() {
     }
   }
 
-  const availableEngineers = engineers.filter(
-    (eng) => !myList.some((e) => e.engineer_id === eng.id),
-  )
-
   const filteredMyList = myList.filter((entry) => {
     const eng = entry.expand?.engineer_id
     if (!eng) return false
     return eng.nome_completo.toLowerCase().includes(search.toLowerCase())
   })
+
+  // Filter out engineers that are already in the list
+  const availableEngineers = searchedEngineers.filter(
+    (eng) => !myList.some((e) => e.engineer_id === eng.id),
+  )
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -127,18 +144,27 @@ export default function MyList() {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-full md:w-[300px] p-0">
-            <Command>
-              <CommandInput placeholder="Buscar por nome..." />
+            <Command shouldFilter={false}>
+              <CommandInput
+                placeholder="Buscar por nome..."
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+              />
               <CommandList>
-                <CommandEmpty>Nenhum engenheiro encontrado.</CommandEmpty>
+                <CommandEmpty>
+                  {searchQuery.length < 2
+                    ? 'Digite pelo menos 2 caracteres...'
+                    : 'Nenhum engenheiro encontrado.'}
+                </CommandEmpty>
                 <CommandGroup>
                   {availableEngineers.map((eng) => (
                     <CommandItem
                       key={eng.id}
-                      value={eng.nome_completo}
+                      value={eng.id}
                       onSelect={() => {
                         handleAdd(eng.id)
                         setOpenCombo(false)
+                        setSearchQuery('')
                       }}
                     >
                       <Plus className="mr-2 h-4 w-4 text-amber-500" />
@@ -179,82 +205,92 @@ export default function MyList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredMyList.map((entry) => {
-                  const eng = entry.expand?.engineer_id
-                  if (!eng) return null
-                  return (
-                    <TableRow key={entry.id} className="group hover:bg-slate-50/80">
-                      <TableCell className="font-medium flex items-center gap-2">
-                        {eng.nome_completo}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-blue-600"
-                          onClick={() => setSelectedEngDetails(eng)}
-                        >
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={entry.entrou_em_contato}
-                          onValueChange={(v) =>
-                            handleUpdate(entry.id, { entrou_em_contato: v as any })
-                          }
-                        >
-                          <SelectTrigger className="h-8 w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Pendente">Pendente</SelectItem>
-                            <SelectItem value="Sim">Sim</SelectItem>
-                            <SelectItem value="Não">Não</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={entry.esta_conosco}
-                          onValueChange={(v) => handleUpdate(entry.id, { esta_conosco: v as any })}
-                        >
-                          <SelectTrigger className="h-8 w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Pendente">Pendente</SelectItem>
-                            <SelectItem value="Sim">Sim</SelectItem>
-                            <SelectItem value="Não">Não</SelectItem>
-                            <SelectItem value="Talvez">Talvez</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          defaultValue={entry.observacoes}
-                          placeholder="Nota..."
-                          className="h-8 min-w-[150px]"
-                          onBlur={(e) => {
-                            if (e.target.value !== entry.observacoes)
-                              handleUpdate(entry.id, { observacoes: e.target.value })
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell className="text-right text-xs text-slate-500 tabular-nums">
-                        {new Date(entry.updated).toLocaleDateString('pt-BR')}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-red-500 opacity-0 group-hover:opacity-100"
-                          onClick={() => handleRemove(entry.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                {filteredMyList.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-slate-500">
+                      Você ainda não adicionou nenhum engenheiro à sua lista.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredMyList.map((entry) => {
+                    const eng = entry.expand?.engineer_id
+                    if (!eng) return null
+                    return (
+                      <TableRow key={entry.id} className="group hover:bg-slate-50/80">
+                        <TableCell className="font-medium flex items-center gap-2">
+                          {eng.nome_completo}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-blue-600"
+                            onClick={() => setSelectedEngDetails(eng)}
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={entry.entrou_em_contato}
+                            onValueChange={(v) =>
+                              handleUpdate(entry.id, { entrou_em_contato: v as any })
+                            }
+                          >
+                            <SelectTrigger className="h-8 w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Pendente">Pendente</SelectItem>
+                              <SelectItem value="Sim">Sim</SelectItem>
+                              <SelectItem value="Não">Não</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={entry.esta_conosco}
+                            onValueChange={(v) =>
+                              handleUpdate(entry.id, { esta_conosco: v as any })
+                            }
+                          >
+                            <SelectTrigger className="h-8 w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Pendente">Pendente</SelectItem>
+                              <SelectItem value="Sim">Sim</SelectItem>
+                              <SelectItem value="Não">Não</SelectItem>
+                              <SelectItem value="Talvez">Talvez</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            defaultValue={entry.observacoes}
+                            placeholder="Nota..."
+                            className="h-8 min-w-[150px]"
+                            onBlur={(e) => {
+                              if (e.target.value !== entry.observacoes)
+                                handleUpdate(entry.id, { observacoes: e.target.value })
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell className="text-right text-xs text-slate-500 tabular-nums">
+                          {new Date(entry.updated).toLocaleDateString('pt-BR')}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 opacity-0 group-hover:opacity-100"
+                            onClick={() => handleRemove(entry.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                )}
               </TableBody>
             </Table>
           </div>
@@ -277,15 +313,15 @@ export default function MyList() {
               </div>
               <div>
                 <p className="text-xs text-slate-500">Cidade</p>
-                <p className="text-sm font-semibold">{selectedEngDetails.cidade}</p>
+                <p className="text-sm font-semibold">{selectedEngDetails.cidade || '-'}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">Título</p>
-                <p className="text-sm font-semibold">{selectedEngDetails.titulo_}</p>
+                <p className="text-sm font-semibold">{selectedEngDetails.titulo_ || '-'}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">E-mail</p>
-                <p className="text-sm font-semibold">{selectedEngDetails.e_mail}</p>
+                <p className="text-sm font-semibold">{selectedEngDetails.e_mail || '-'}</p>
               </div>
             </div>
           )}
