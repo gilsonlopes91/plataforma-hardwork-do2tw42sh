@@ -38,8 +38,6 @@ routerAdd(
     }
 
     const expectedCols = [
-      'numero',
-      'numero_corrigido',
       'numero_formatado',
       'nome_salvo',
       'nome_publico',
@@ -72,7 +70,6 @@ routerAdd(
         row[h] = rowValues[index] || ''
       })
 
-      const numero = (row.numero || '').toString().trim()
       const nome_completo = (row.nome_completo || '').toString().trim()
 
       if (!nome_completo) {
@@ -83,17 +80,9 @@ routerAdd(
 
       let record = null
 
-      if (numero) {
-        try {
-          record = $app.findFirstRecordByData('engineers', 'numero', numero)
-        } catch (_) {}
-      }
-
-      if (!record) {
-        try {
-          record = $app.findFirstRecordByData('engineers', 'nome_completo', nome_completo)
-        } catch (_) {}
-      }
+      try {
+        record = $app.findFirstRecordByData('engineers', 'nome_completo', nome_completo)
+      } catch (_) {}
 
       if (!record) {
         record = new Record(col)

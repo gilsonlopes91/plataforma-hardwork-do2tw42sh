@@ -135,7 +135,8 @@ export default function EngineersDb() {
 
               <ul className="list-disc list-inside space-y-2 marker:text-blue-500">
                 <li>
-                  O arquivo deve ser obrigatoriamente no formato <strong>.csv</strong>.
+                  O arquivo deve ser obrigatoriamente no formato <strong>.csv</strong> (exportado da
+                  sua <strong>PLANILHA ENG CIVIL.xlsx</strong>).
                 </li>
                 <li>
                   A coluna{' '}
@@ -145,8 +146,11 @@ export default function EngineersDb() {
                   é <strong>obrigatória</strong> para todos os registros.
                 </li>
                 <li>
-                  Os nomes das colunas devem ser exatos. Utilize o botão abaixo para baixar um
-                  modelo com as colunas já formatadas corretamente.
+                  As 9 colunas exigidas são: <strong>numero_formatado</strong>,{' '}
+                  <strong>nome_salvo</strong>, <strong>nome_publico</strong>,{' '}
+                  <strong>nome_completo</strong>, <strong>e_mail</strong>, <strong>titulo_</strong>,{' '}
+                  <strong>cidade</strong>, <strong>inspetoria</strong> e{' '}
+                  <strong>status_2026</strong>.
                 </li>
               </ul>
 
@@ -253,31 +257,27 @@ export default function EngineersDb() {
             <Table>
               <TableHeader className="sticky top-0 bg-slate-50 shadow-sm z-10">
                 <TableRow>
-                  <TableHead>Número</TableHead>
-                  <TableHead>Num Corrigido</TableHead>
-                  <TableHead>Num Formatado</TableHead>
-                  <TableHead>Nome Salvo</TableHead>
-                  <TableHead>Nome Público</TableHead>
-                  <TableHead className="min-w-[200px]">Nome Completo</TableHead>
-                  <TableHead>E-mail</TableHead>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Cidade</TableHead>
-                  <TableHead>Inspetoria</TableHead>
-                  <TableHead>Status 2026</TableHead>
+                  <TableHead>NÚMERO FORMATADO</TableHead>
+                  <TableHead>NOME SALVO</TableHead>
+                  <TableHead>NOME PÚBLICO</TableHead>
+                  <TableHead className="min-w-[200px]">NOME COMPLETO</TableHead>
+                  <TableHead>E-MAIL</TableHead>
+                  <TableHead>TÍTULO</TableHead>
+                  <TableHead>CIDADE</TableHead>
+                  <TableHead>INSPETORIA</TableHead>
+                  <TableHead>STATUS 2026</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {engineers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={11} className="text-center py-8 text-slate-500">
+                    <TableCell colSpan={9} className="text-center py-8 text-slate-500">
                       Nenhum engenheiro encontrado.
                     </TableCell>
                   </TableRow>
                 ) : (
                   engineers.map((eng) => (
                     <TableRow key={eng.id} className="hover:bg-slate-50/50">
-                      <TableCell>{eng.numero}</TableCell>
-                      <TableCell>{eng.numero_corrigido}</TableCell>
                       <TableCell>{eng.numero_formatado}</TableCell>
                       <TableCell>{eng.nome_salvo}</TableCell>
                       <TableCell>{eng.nome_publico}</TableCell>

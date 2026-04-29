@@ -7,8 +7,6 @@ routerAdd(
     }
 
     const headers = [
-      'numero',
-      'numero_corrigido',
       'numero_formatado',
       'nome_salvo',
       'nome_publico',
