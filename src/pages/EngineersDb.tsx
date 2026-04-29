@@ -10,10 +10,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { UploadCloud, FileSpreadsheet, Search } from 'lucide-react'
+import { UploadCloud, FileSpreadsheet, Search, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { useRealtime } from '@/hooks/use-realtime'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 export default function EngineersDb() {
   const [engineers, setEngineers] = useState<Engineer[]>([])
@@ -49,7 +50,9 @@ export default function EngineersDb() {
       await new Promise((resolve) => setTimeout(resolve, 1000))
       toast.info(`O processamento do arquivo "${file.name}" requer integração no backend.`)
     } catch (err) {
-      toast.error('Erro ao processar o arquivo.')
+      toast.error(
+        'Erro ao processar o arquivo. Verifique o Guia de Upload para confirmar os cabeçalhos das colunas.',
+      )
     } finally {
       setIsUploading(false)
       e.target.value = ''
@@ -64,6 +67,65 @@ export default function EngineersDb() {
         </h2>
         <p className="text-slate-500 mt-1">Gerencie a base central de engenheiros.</p>
       </div>
+
+      <Alert className="bg-blue-50/50 border-blue-200 text-blue-900 dark:bg-blue-950/40 dark:border-blue-900 dark:text-blue-100 shadow-sm">
+        <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        <AlertTitle className="text-blue-950 dark:text-blue-50 font-semibold text-lg ml-2">
+          Guia de Upload e Integridade de Dados
+        </AlertTitle>
+        <AlertDescription className="mt-3 text-blue-800 dark:text-blue-200 space-y-4 ml-2">
+          <p className="leading-relaxed">
+            A importação de uma nova planilha popula a base central de <strong>engenheiros</strong>,
+            que serve como fonte de busca para todos os usuários da plataforma. Siga as instruções
+            abaixo para evitar erros durante o processo:
+          </p>
+
+          <ul className="list-disc list-inside space-y-2 marker:text-blue-500">
+            <li>
+              O arquivo deve ser obrigatoriamente no formato <strong>.xlsx</strong>.
+            </li>
+            <li>
+              A coluna{' '}
+              <code className="bg-blue-100 dark:bg-blue-900/60 px-1.5 py-0.5 rounded text-sm font-mono">
+                nome_completo
+              </code>
+              é <strong>obrigatória</strong> para todos os registros.
+            </li>
+            <li>
+              Os nomes das colunas (cabeçalho na linha 1) devem ser exatos: minúsculos e com
+              underlines (underscores) onde aplicável.
+            </li>
+          </ul>
+
+          <div className="pt-2">
+            <span className="font-semibold block mb-3 text-sm uppercase tracking-wider text-blue-700 dark:text-blue-300">
+              Colunas Exigidas (Copie Exatamente):
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {[
+                'numero',
+                'numero_corrigido',
+                'numero_formatado',
+                'nome_salvo',
+                'nome_publico',
+                'nome_completo',
+                'e_mail',
+                'titulo_',
+                'cidade',
+                'inspetoria',
+                'status_2026',
+              ].map((col) => (
+                <span
+                  key={col}
+                  className="bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800 px-2.5 py-1 rounded-md text-xs font-mono font-medium shadow-sm text-slate-700 dark:text-slate-300"
+                >
+                  {col}
+                </span>
+              ))}
+            </div>
+          </div>
+        </AlertDescription>
+      </Alert>
 
       <Card className="border-2 border-dashed border-blue-200 bg-blue-50/30 shadow-none">
         <CardHeader className="pb-4">
