@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-30T18:39:11.191Z",
+  "generatedAt": "2026-04-30T18:45:20.865Z",
   "collections": [
     {
       "name": "users",
@@ -29,21 +29,29 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         },
         {
           "name": "role",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["ADMIN", "USER"]
+          "selectValues": [
+            "ADMIN",
+            "USER"
+          ]
         }
       ],
       "indexes": [
@@ -67,14 +75,18 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onUpdate"]
+          "autodateTriggers": [
+            "onUpdate"
+          ]
         }
       ],
       "indexes": []
@@ -161,14 +173,19 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         }
       ],
       "indexes": []
@@ -203,14 +220,23 @@
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["Sim", "Não", "Pendente"]
+          "selectValues": [
+            "Sim",
+            "Não",
+            "Pendente"
+          ]
         },
         {
           "name": "esta_conosco",
           "type": "select",
           "required": false,
           "system": false,
-          "selectValues": ["Sim", "Não", "Talvez", "Pendente"]
+          "selectValues": [
+            "Sim",
+            "Não",
+            "Talvez",
+            "Pendente"
+          ]
         },
         {
           "name": "observacoes",
@@ -223,17 +249,24 @@
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate"]
+          "autodateTriggers": [
+            "onCreate"
+          ]
         },
         {
           "name": "updated",
           "type": "autodate",
           "required": false,
           "system": false,
-          "autodateTriggers": ["onCreate", "onUpdate"]
+          "autodateTriggers": [
+            "onCreate",
+            "onUpdate"
+          ]
         }
       ],
-      "indexes": ["CREATE UNIQUE INDEX idx_user_engineer ON user_selections (user_id, engineer_id)"]
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_user_engineer ON user_selections (user_id, engineer_id)"
+      ]
     }
   ]
 }
