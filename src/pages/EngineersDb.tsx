@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getEngineers } from '@/services/api'
+import { getEngineers, getUserSelections, createUserSelection } from '@/services/api'
 import { Engineer } from '@/types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -18,6 +18,7 @@ import {
   Download,
   Trash2,
   AlertTriangle,
+  Plus,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
@@ -56,12 +57,19 @@ export default function EngineersDb() {
   const [showBulkDelete, setShowBulkDelete] = useState(false)
   const [showDeleteAll, setShowDeleteAll] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [mySelections, setMySelections] = useState<Set<string>>(new Set())
+  const [isAdding, setIsAdding] = useState<string | null>(null)
 
   const loadData = async () => {
     try {
       const data = await getEngineers(search)
       setEngineers(data.items)
       setTotalCount(data.totalItems)
+
+      if (user?.id) {
+        const sels = await getUserSelections(user.id)
+        setMySelections(new Set(sels.map((s) => s.engineer_id)))
+      }
     } catch (err) {
       toast.error('Erro ao carregar engenheiros')
     }
@@ -72,9 +80,24 @@ export default function EngineersDb() {
       loadData()
     }, 300)
     return () => clearTimeout(delay)
-  }, [search])
+  }, [search, user?.id])
 
   useRealtime('engineers', loadData)
+  useRealtime('user_selections', loadData)
+
+  const handleAddToMyList = async (engId: string) => {
+    if (!user?.id) return
+    setIsAdding(engId)
+    try {
+      await createUserSelection(user.id, engId)
+      toast.success('Engenheiro adicionado à sua lista!')
+      setMySelections((prev) => new Set(prev).add(engId))
+    } catch (err: any) {
+      toast.error(err.response?.message || 'Erro ao adicionar à lista.')
+    } finally {
+      setIsAdding(null)
+    }
+  }
 
   const handleDownloadTemplate = async () => {
     try {
@@ -374,13 +397,14 @@ export default function EngineersDb() {
                   <TableHead>CIDADE</TableHead>
                   <TableHead>INSPETORIA</TableHead>
                   <TableHead>STATUS 2026</TableHead>
+                  <TableHead className="text-right">AÇÕES</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {engineers.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={isAdmin ? 10 : 9}
+                      colSpan={isAdmin ? 11 : 10}
                       className="text-center py-8 text-slate-500"
                     >
                       Nenhum engenheiro encontrado.
@@ -409,6 +433,25 @@ export default function EngineersDb() {
                       <TableCell>{eng.cidade}</TableCell>
                       <TableCell>{eng.inspetoria}</TableCell>
                       <TableCell>{eng.status_2026}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                          onClick={() => handleAddToMyList(eng.id)}
+                          disabled={mySelections.has(eng.id) || isAdding === eng.id}
+                        >
+                          {mySelections.has(eng.id) ? (
+                            'Adicionado'
+                          ) : isAdding === eng.id ? (
+                            'Adicionando...'
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4 mr-1" /> Lista
+                            </>
+                          )}
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
