@@ -136,7 +136,8 @@ export default function EngineersDb() {
               <ul className="list-disc list-inside space-y-2 marker:text-blue-500">
                 <li>
                   O arquivo deve ser obrigatoriamente no formato <strong>.csv</strong> (exportado da
-                  sua <strong>PLANILHA ENG CIVIL.xlsx</strong>).
+                  sua <strong>PLANILHA ENG CIVIL.xlsx</strong>) e separado por ponto e vírgula (
+                  <strong>;</strong>).
                 </li>
                 <li>
                   A coluna{' '}

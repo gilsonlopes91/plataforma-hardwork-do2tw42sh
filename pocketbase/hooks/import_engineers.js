@@ -21,7 +21,7 @@ routerAdd(
         const char = line[i]
         if (char === '"') {
           inQuotes = !inQuotes
-        } else if (char === ',' && !inQuotes) {
+        } else if (char === ';' && !inQuotes) {
           result.push(current.trim())
           current = ''
         } else {

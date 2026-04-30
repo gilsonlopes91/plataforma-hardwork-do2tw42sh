@@ -18,7 +18,7 @@ routerAdd(
       'status_2026',
     ]
 
-    const csv = headers.join(',') + '\n'
+    const csv = headers.join(';') + '\n'
 
     return e.json(200, { template: csv })
   },
