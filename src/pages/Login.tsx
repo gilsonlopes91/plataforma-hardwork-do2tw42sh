@@ -87,7 +87,7 @@ export default function Login() {
               className="w-full h-11 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white"
               disabled={loading}
             >
-              {loading ? 'Entrando...' : 'Entrar na plataforma'}
+              {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </CardFooter>
         </form>

@@ -55,4 +55,21 @@ export const deleteUserSelection = (id: string) => {
   return pb.collection('user_selections').delete(id)
 }
 
-export const getUsers = () => pb.collection('users').getFullList<User>()
+export const getUsers = () => pb.collection('users').getFullList<User>({ sort: '-created' })
+
+export const createUserRecord = async (name: string, email: string) => {
+  const password = Math.random().toString(36).slice(-12) + 'A@1'
+  const user = await pb.collection('users').create<User>({
+    name,
+    email,
+    password,
+    passwordConfirm: password,
+    role: 'USER',
+  })
+  await pb.collection('users').requestPasswordReset(email)
+  return user
+}
+
+export const updateUserRole = (id: string, role: 'ADMIN' | 'USER') => {
+  return pb.collection('users').update<User>(id, { role })
+}

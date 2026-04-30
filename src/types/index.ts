@@ -5,6 +5,8 @@ export interface User {
   email: string
   name: string
   role: Role
+  created?: string
+  updated?: string
 }
 
 export type StatusEntrouContato = 'Sim' | 'Não' | 'Pendente'
