@@ -42,6 +42,7 @@ import { Users, HardHat, FileSpreadsheet, Activity, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRealtime } from '@/hooks/use-realtime'
 import { useAppContext } from '@/context/app-context'
+import { extractFieldErrors, getErrorMessage } from '@/lib/pocketbase/errors'
 import { toast } from 'sonner'
 
 export default function AdminPanel() {
@@ -125,7 +126,12 @@ export default function AdminPanel() {
       setNewUserEmail('')
       loadData()
     } catch (err: any) {
-      toast.error(err.message || 'Erro ao criar usuário.')
+      const fieldErrors = extractFieldErrors(err)
+      if (fieldErrors.email) {
+        toast.error(`E-mail inválido ou já em uso: ${fieldErrors.email}`)
+      } else {
+        toast.error(getErrorMessage(err) || 'Erro ao criar usuário.')
+      }
     } finally {
       setIsCreatingUser(false)
     }

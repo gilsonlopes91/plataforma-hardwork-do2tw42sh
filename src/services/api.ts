@@ -66,7 +66,6 @@ export const createUserRecord = async (name: string, email: string) => {
     passwordConfirm: password,
     role: 'USER',
   })
-  await pb.collection('users').requestPasswordReset(email)
   return user
 }
 

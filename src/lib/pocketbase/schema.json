@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-30T18:46:15.669Z",
+  "generatedAt": "2026-04-30T18:57:41.017Z",
   "collections": [
     {
       "name": "users",
@@ -7,7 +7,7 @@
       "apiRules": {
         "list": "@request.auth.role = 'ADMIN' || id = @request.auth.id",
         "view": "@request.auth.role = 'ADMIN' || id = @request.auth.id",
-        "create": "",
+        "create": "@request.auth.role = 'ADMIN'",
         "update": "@request.auth.role = 'ADMIN' || id = @request.auth.id",
         "delete": "id = @request.auth.id"
       },
